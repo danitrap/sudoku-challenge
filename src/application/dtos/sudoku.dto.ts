@@ -27,7 +27,7 @@ export class SudokuDTO {
    * @param properties DTO properties
    */
   constructor(properties: Partial<SudokuDTO> = {}) {
-    (Object.keys(properties) as Array<keyof SudokuDTO>).forEach((key) => {
+    (Object.keys(properties) as Array<keyof SudokuDTO>).forEach(key => {
       if (allowedProperties.includes(key)) {
         const value = properties[key];
         if (value !== undefined) {

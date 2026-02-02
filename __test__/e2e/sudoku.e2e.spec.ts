@@ -1,12 +1,12 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../src/infrastructure/modules/app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import supertest from 'supertest';
-import { TEST_GRID_1, TEST_GRID_2, TEST_GRID_3, TEST_GRID_4, TEST_GRID_5, TEST_GRID_6 } from '../fcatory';
+import { useContainer } from 'class-validator';
+import { TEST_GRID_0, TEST_GRID_2, TEST_GRID_3, TEST_GRID_5, TEST_GRID_6 } from '../fcatory';
 describe('GRID endpoints (e2e)', () => {
   let app: INestApplication;
-  let request: ReturnType<typeof supertest>;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -20,9 +20,19 @@ describe('GRID endpoints (e2e)', () => {
         debug: jest.fn(),
         verbose: jest.fn(),
       })
+      .overrideProvider('IHttpResponseService')
+      .useValue({
+        generate: jest.fn().mockImplementation((status: number, data: any) => ({ status, data })),
+      })
+      .overrideProvider('IConfigService')
+      .useValue({
+        get: jest.fn().mockReturnValue({ dimenstion: 9 }),
+      })
       .compile();
 
     app = module.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
+    useContainer(app.select(AppModule), { fallbackOnErrors: true });
     await app.init();
 
     const config = new DocumentBuilder()
@@ -32,45 +42,49 @@ describe('GRID endpoints (e2e)', () => {
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document);
-    request = supertest(app.getHttpServer());
+
+    await app.listen(0);
   });
   //=============================================================================================================================
   describe('check service liveness', () => {
     it('should receive status code 404', async () => {
-      return await request.get('/').expect(404);
+      return await supertest(app.getHttpServer()).get('/').expect(404);
     });
   });
 
   describe('check Sudoko endpoints', () => {
     it('should receive status code 200', async () => {
-      return await request.get('/api/v1/sudoku').expect(200).expect('Welcome to Sudoko solver endpoint');
+      return await supertest(app.getHttpServer())
+        .get('/api/v1/sudoku')
+        .expect(200)
+        .expect('Welcome to Sudoko solver endpoint');
     });
     it('should return 400 bad request error', async () => {
-      return await request.post('/api/v1/sudoku').send({ grid: '' }).expect(400);
+      return await supertest(app.getHttpServer()).post('/api/v1/sudoku').send({ grid: '' }).expect(400);
     });
     it('should return 400 bad request error', async () => {
-      return await request.post('/api/v1/sudoku').send().expect(400);
+      return await supertest(app.getHttpServer()).post('/api/v1/sudoku').send().expect(400);
     });
 
     it('should return 200 Success request', async () => {
-      return await request.post('/api/v1/sudoku').send({ grid: TEST_GRID_1 }).expect(200);
+      return await supertest(app.getHttpServer()).post('/api/v1/sudoku').send({ grid: TEST_GRID_0 }).expect(200);
     });
     it('should return 200 Success request', async () => {
-      return await request.post('/api/v1/sudoku').send({ grid: TEST_GRID_2 }).expect(200);
+      return await supertest(app.getHttpServer()).post('/api/v1/sudoku').send({ grid: TEST_GRID_2 }).expect(200);
     });
     it('should return 200 Success request', async () => {
-      return await request.post('/api/v1/sudoku').send({ grid: TEST_GRID_3 }).expect(200);
+      return await supertest(app.getHttpServer()).post('/api/v1/sudoku').send({ grid: TEST_GRID_3 }).expect(200);
     });
 
     it('should return 200 Success request', async () => {
-      return await request.post('/api/v1/sudoku').send({ grid: TEST_GRID_5 }).expect(200);
+      return await supertest(app.getHttpServer()).post('/api/v1/sudoku').send({ grid: TEST_GRID_5 }).expect(200);
     });
     it('should return 200 Success request', async () => {
-      return await request.post('/api/v1/sudoku').send({ grid: TEST_GRID_6 }).expect(200);
+      return await supertest(app.getHttpServer()).post('/api/v1/sudoku').send({ grid: TEST_GRID_6 }).expect(200);
     });
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await app.close();
   });
 });

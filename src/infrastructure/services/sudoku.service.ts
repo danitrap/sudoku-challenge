@@ -1,6 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { HttpException } from '../../domain/exceptions';
-import { SudokuGrid, HttpResponse, SudokuResult, ISudokuService, IConfigService, IHttpResponseService, ILoggerService } from '../../domain/interfaces';
+import {
+  SudokuGrid,
+  HttpResponse,
+  SudokuResult,
+  ISudokuService,
+  IConfigService,
+  IHttpResponseService,
+  ILoggerService,
+} from '../../domain/interfaces';
 import { HttpStatus } from '../../domain/enums';
 import { SudokuOptions, EnvObjects } from '../config';
 import { validateDTO, validateOutputDTO, processHttpError } from '../../domain/helpers';
@@ -11,9 +19,9 @@ export class SudokuService implements ISudokuService {
   private options: SudokuOptions | undefined = this.configService.get<SudokuOptions>(EnvObjects.SUDOKU_OPTIONS);
 
   constructor(
-    private readonly httpResponseService: IHttpResponseService,
-    private readonly configService: IConfigService,
-    private readonly logger: ILoggerService
+    @Inject('IHttpResponseService') private readonly httpResponseService: IHttpResponseService,
+    @Inject('IConfigService') private readonly configService: IConfigService,
+    @Inject('ILoggerService') private readonly logger: ILoggerService
   ) {}
 
   async handleSudokuRequest(sudokuTable: SudokuGrid): Promise<HttpResponse<SudokuGrid>> {
@@ -28,7 +36,9 @@ export class SudokuService implements ISudokuService {
       return this.httpResponseService.generate(HttpStatus.OK, result);
     } catch (error: any) {
       if (error instanceof HttpException) {
-        throw new HttpResponseException(this.httpResponseService.generate(error.status, {}, error.message, error.description));
+        throw new HttpResponseException(
+          this.httpResponseService.generate(error.status, {}, error.message, error.description)
+        );
       }
       processHttpError(error, this.logger);
       throw new HttpResponseException(this.httpResponseService.generate(HttpStatus.INTERNAL_SERVER_ERROR, {}));

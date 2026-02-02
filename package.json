@@ -14,7 +14,7 @@
         "start:prod": "NODE_ENV=production node dist/main",
         "daemon": "nest build --webpack --webpackPath webpack-hmr.config.js",
         "lint": "eslint \"{src,apps,libs,__test__}/**/*.ts\" --fix",
-        "test": "jest --detectOpenHandles --forceExit",
+        "test": "jest --detectOpenHandles",
         "test:ci": "jest --ci --forceExit",
         "test:watch": "jest --watch --forceExit",
         "test:cov": "jest --coverage --forceExit",

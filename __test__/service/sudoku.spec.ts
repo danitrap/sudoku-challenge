@@ -5,13 +5,19 @@
 import { SudokuService } from '../../src/infrastructure/services/sudoku.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TEST_GRID_0, TEST_GRID_1, TEST_GRID_2, TEST_GRID_3 } from '../fcatory';
+
 import { ISudokuService } from '../../src/domain/interfaces';
+
+jest.mock('uuid', () => ({
+  v4: () => 'mocked-uuid',
+}));
 
 describe('sudoku service', () => {
   let service: ISudokuService;
+  let module: TestingModule;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       providers: [
         {
           provide: 'IHttpResponseService',
@@ -73,5 +79,9 @@ describe('sudoku service', () => {
       const result = await service.handleSudokuRequest({ grid: TEST_GRID_3 });
       expect(result.data.grid).toBeDefined();
     });
+  });
+
+  afterAll(async () => {
+    await module.close();
   });
 });
