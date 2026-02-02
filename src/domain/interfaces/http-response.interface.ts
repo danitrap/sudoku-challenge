@@ -2,7 +2,7 @@
  * Author Moeid Heidari
  * Date 17 May 2022
  */
-export interface HttpResponse {
+export interface HttpResponse<T = unknown> {
   /**
    * Represents the type of the response
    */
@@ -22,5 +22,5 @@ export interface HttpResponse {
   /**
    * Represents the actual data which is returned by the API. In case of empty response we will have it empty also.
    */
-  data: any;
+  data: T;
 }

@@ -8,20 +8,13 @@ import { ConfigModule } from '@nestjs/config';
 import { configuration } from '../config/env.objects';
 import { validate } from '../config/env.validation';
 
-import { LoggerInterceptor } from '../../domain/interceptors';
-import { RolesGuard } from '../../domain/guards';
-import * as modules from '../../domain/modules';
+import { LoggerInterceptor } from '../interceptors';
+import { RolesGuard } from '../guards';
+import { HealthModule } from './health.module';
+import { SudokuModule } from './sudoku.module';
 import { CommonModule } from './common/common.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
-/**
- * application modules list
- */
-const modulesList = Object.keys(modules).map(moduleIndex => modules[moduleIndex as keyof typeof modules]);
-
-/**
- * application module
- */
 @Module({
   imports: [
     PrometheusModule.register(),
@@ -34,7 +27,8 @@ const modulesList = Object.keys(modules).map(moduleIndex => modules[moduleIndex 
       cache: true,
       expandVariables: true,
     }),
-    ...modulesList,
+    HealthModule,
+    SudokuModule,
   ],
   providers: [
     {

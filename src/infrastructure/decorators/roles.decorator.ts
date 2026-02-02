@@ -3,7 +3,7 @@
  * Date 17 May 2022
  */
 import { SetMetadata } from '@nestjs/common';
-import { Roles as Role } from '../enums';
+import { Roles as Role } from '../../domain/enums';
 
 /**
  * keys of roles

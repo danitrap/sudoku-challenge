@@ -26,9 +26,14 @@ export class SudokuDTO {
    * get user DTO constructor
    * @param properties DTO properties
    */
-  constructor(properties: any = {}) {
-    Object.keys(properties).forEach((key: string) => {
-      if (allowedProperties.includes(key)) this[key as keyof this] = properties[key];
+  constructor(properties: Partial<SudokuDTO> = {}) {
+    (Object.keys(properties) as Array<keyof SudokuDTO>).forEach((key) => {
+      if (allowedProperties.includes(key)) {
+        const value = properties[key];
+        if (value !== undefined) {
+          this[key] = value;
+        }
+      }
     });
   }
 }

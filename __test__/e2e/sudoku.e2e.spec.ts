@@ -11,7 +11,16 @@ describe('GRID endpoints (e2e)', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider('ILoggerService')
+      .useValue({
+        log: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        verbose: jest.fn(),
+      })
+      .compile();
 
     app = module.createNestApplication();
     await app.init();

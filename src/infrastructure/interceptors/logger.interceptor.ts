@@ -7,27 +7,19 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Request, Response } from 'express';
 import { MqttContext } from '@nestjs/microservices';
-import { LoggerService } from '../services/common';
-////////////////////////////////////////////////////////////////////////
-/**
- * Logs the requests
- */
+import { ILoggerService } from '../../domain/interfaces';
+
+interface KafkaArg {
+  partition: string;
+  topic: string;
+  args?: unknown;
+}
+
 @Injectable()
 export class LoggerInterceptor implements NestInterceptor {
-  //==================================================================================================
-  /**
-   * logs requests for the service
-   */
-  private readonly logger: LoggerService = new LoggerService(LoggerInterceptor.name);
+  constructor(private readonly logger: ILoggerService) {}
 
-  //==================================================================================================
-  /**
-   * intercept handler
-   * @param context context
-   * @param next next call
-   * @returns handler
-   */
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const startTime = Date.now();
     const contextType = context.getType();
 
@@ -52,13 +44,6 @@ export class LoggerInterceptor implements NestInterceptor {
     );
   }
 
-  //==================================================================================================
-  /**
-   * logs the HTTP requests
-   * @param context context
-   * @param startTime start time
-   * @returns nothing
-   */
   private logHttpRequest(context: ExecutionContext, startTime: number) {
     if (context.getType() !== 'http') return;
     const reqTime = Date.now() - startTime;
@@ -73,13 +58,6 @@ export class LoggerInterceptor implements NestInterceptor {
     );
   }
 
-  //==================================================================================================
-  /**
-   * logs the RTC requests
-   * @param context context
-   * @param startTime start time
-   * @returns nothing
-   */
   private logRpcMessage(context: ExecutionContext, startTime: number) {
     if (context.getType() !== 'rpc') return;
     const reqTime = Date.now() - startTime;
@@ -89,24 +67,17 @@ export class LoggerInterceptor implements NestInterceptor {
     if (args[1] && args[1] instanceof MqttContext) {
       this.logMqttMessage(args[1], startTime, reqTime, controllerName, handlerName);
     } else {
-      this.logKafkaMessage(context, startTime, reqTime, controllerName, handlerName, args);
+      this.logKafkaMessage(context, startTime, reqTime, controllerName, handlerName, args as KafkaArg[]);
     }
   }
 
-  //==================================================================================================
-  /**
-   * logs the KAFKA requests
-   * @param context context
-   * @param startTime start time
-   * @returns nothing
-   */
   private logKafkaMessage(
     context: ExecutionContext,
     startTime: number,
     reqTime: number,
     controllerName: string,
     handlerName: string,
-    args: any
+    args: KafkaArg[]
   ) {
     for (const arg of args) {
       if (!arg.args) {
@@ -115,13 +86,6 @@ export class LoggerInterceptor implements NestInterceptor {
     }
   }
 
-  //==================================================================================================
-  /**
-   * logs the MQTT requests
-   * @param context context
-   * @param startTime start time
-   * @returns nothing
-   */
   private logMqttMessage(
     context: MqttContext,
     startTime: number,
@@ -132,6 +96,4 @@ export class LoggerInterceptor implements NestInterceptor {
     const packet = context.getPacket();
     this.logger.log(`[MQTT] ${packet.cmd} ${context.getTopic()} [${controllerName}:${handlerName}] ${reqTime}ms`);
   }
-
-  //==================================================================================================
 }

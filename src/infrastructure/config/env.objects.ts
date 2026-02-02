@@ -23,11 +23,17 @@ export interface SudokuOptions {
   dimenstion: number;
 }
 
+export interface AppConfiguration {
+  SudokuOptions: {
+    dimenstion: string | undefined;
+  };
+}
+
 /**
  * configuration function
  * @returns configuration taken from env
  */
-export const configuration = (): any => ({
+export const configuration = (): AppConfiguration => ({
   SudokuOptions: {
     dimenstion: process.env.DIMENSION,
   },

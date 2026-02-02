@@ -3,8 +3,8 @@
  * Date 17 May 2022
  */
 import { Module } from '@nestjs/common';
-import { HttpResponseModule } from '../../../domain/modules/common';
-import { LoggerModule } from '../../../domain/modules/common';
+import { HttpResponseModule } from './http-response.module';
+import { LoggerModule } from './logger.module';
 
 @Module({
   imports: [HttpResponseModule, LoggerModule],

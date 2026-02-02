@@ -4,7 +4,7 @@
  */
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Roles as Role } from '../enums';
+import { Roles as Role } from '../../domain/enums';
 import { ROLES_KEY } from '../decorators';
 /**
  * roles guard
